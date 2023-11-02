@@ -1,0 +1,14 @@
+#+title: Movie Rating
+#+author: Atri Hegde
+
+A simple app where you can add movie ratings and leave a review to come back for later.
+
+** Technology used
+
+Created using =t3-app=.
+
+- Next.js 13 - Typescript
+- tRPC
+- Drizzle ORM - MySQL - PlanetScale
+- Tailwindcss
+- NextUI
