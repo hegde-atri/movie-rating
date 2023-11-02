@@ -1,6 +1,8 @@
 import { relations, sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
+  decimal,
   index,
   int,
   mysqlTableCreator,
@@ -19,22 +21,38 @@ import { type AdapterAccount } from "next-auth/adapters";
  */
 export const mysqlTable = mysqlTableCreator((name) => `movie-rating_${name}`);
 
-export const posts = mysqlTable(
-  "post",
-  {
-    id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }),
-    createdById: varchar("createdById", { length: 255 }).notNull(),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updatedAt").onUpdateNow(),
-  },
-  (example) => ({
-    createdByIdIdx: index("createdById_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
-  })
-);
+export const ratings = mysqlTable("ratings", {
+  id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
+  name: varchar("name", { length: 255 }).notNull(),
+  image: varchar("image", { length: 255 }),
+  rating: decimal("rating", { precision: 5, scale: 2 }).notNull(),
+  public: boolean("public").notNull(),
+  draft: varchar("draft", { length: 10 }).notNull(),
+  userId: varchar("userId", { length: 255 }).notNull(),
+});
+
+export const ratingsRelations = relations(ratings, ({ one }) => ({
+  users: one(users, {
+    fields: [ratings.userId],
+    references: [users.id],
+  }),
+}));
+
+export const comments = mysqlTable("comments", {
+  id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
+  rating: decimal("rating", { precision: 5, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  userId: bigint("userId", { mode: "number" }).notNull(),
+  ratingId: bigint("ratingId", { mode: "number" }).notNull(),
+});
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  user: one(users, { fields: [comments.userId], references: [users.id] }),
+  rating: one(ratings, {
+    fields: [comments.ratingId],
+    references: [ratings.id],
+  }),
+}));
 
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
@@ -71,7 +89,7 @@ export const accounts = mysqlTable(
   (account) => ({
     compoundKey: primaryKey(account.provider, account.providerAccountId),
     userIdIdx: index("userId_idx").on(account.userId),
-  })
+  }),
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -89,7 +107,7 @@ export const sessions = mysqlTable(
   },
   (session) => ({
     userIdIdx: index("userId_idx").on(session.userId),
-  })
+  }),
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -105,5 +123,5 @@ export const verificationTokens = mysqlTable(
   },
   (vt) => ({
     compoundKey: primaryKey(vt.identifier, vt.token),
-  })
+  }),
 );
