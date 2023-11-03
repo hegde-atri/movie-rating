@@ -104,6 +104,7 @@ const HeroCard = (props: {
         <Card className="bg-gray-900 hover:scale-105 hover:bg-slate-900">
           <CardHeader>
             <div className="flex grow flex-col">
+              {/* @ts-ignore */}
               <props.icon className="mx-auto my-2" size={35} />
               <h2 className="text-center text-xl text-slate-200 md:text-2xl">
                 {props.title}
